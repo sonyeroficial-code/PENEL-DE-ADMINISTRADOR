@@ -1,69 +1,47 @@
-const CACHE_NAME = "panel-admin-v34";
-const APP_SHELL = [
-  "./",
-  "./index.html",
-  "./manifest.webmanifest",
-  "./icon-48.png",
-  "./icon-96.png",
-  "./icon-192.png",
-  "./icon-512.png",
-  "./icon-maskable-512.png",
-  "./apple-touch-icon.png",
-  "./favicon-32.png"
+/* Static resources only. Firebase requests and user data bypass this worker. */
+const CACHE = 'panel-admin-pwa-2026-10-03-v1';
+const PREFIX = 'panel-admin-pwa-';
+const STATIC = [
+  './offline.html', './pwa.js', './manifest.webmanifest',
+  './icon-192.png', './icon-512.png', './icon-maskable-512.png',
+  './apple-touch-icon.png', './favicon-32.png'
 ];
+const STATIC_URLS = new Set(STATIC.map(path => new URL(path, self.registration.scope).href));
 
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
-  );
+self.addEventListener('install', event => {
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    await cache.addAll(STATIC.map(path => new Request(new URL(path, self.registration.scope), { cache: 'reload' })));
+    await self.skipWaiting();
+  })());
 });
-
-self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-      ))
-      .then(() => self.clients.claim())
-  );
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(key => key.startsWith(PREFIX) && key !== CACHE).map(key => caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
-
-self.addEventListener("fetch", event => {
-  const req = event.request;
-
-  if (req.method !== "GET") return;
-
-  const url = new URL(req.url);
-
-  // Firebase y recursos externos siempre por red.
-  if (url.origin !== self.location.origin) {
-    return;
-  }
-
-  // Navegación: red primero y fallback al index.
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put("./index.html", copy));
-          return response;
-        })
-        .catch(() => caches.match("./index.html"))
-    );
-    return;
-  }
-
-  // Archivos locales: caché primero.
-  event.respondWith(
-    caches.match(req).then(cached => cached || fetch(req).then(response => {
-      if (response && response.status === 200) {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+self.addEventListener('fetch', event => {
+  const request = event.request;
+  if (request.method !== 'GET') return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin || !url.href.startsWith(self.registration.scope)) return;
+  if (request.mode === 'navigate') {
+    event.respondWith((async () => {
+      try { return await fetch(request, { cache: 'no-cache' }); }
+      catch (error) {
+        const cache = await caches.open(CACHE);
+        const offline = await cache.match(new URL('./offline.html', self.registration.scope).href);
+        return offline || new Response('Sin conexión. Revisa tu internet y vuelve a abrir el panel.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
       }
-      return response;
-    }))
-  );
+    })());
+    return;
+  }
+  if (STATIC_URLS.has(url.href)) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      return (await cache.match(request)) || fetch(request);
+    })());
+  }
 });

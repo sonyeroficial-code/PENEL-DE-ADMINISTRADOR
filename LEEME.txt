@@ -1,0 +1,57 @@
+PANEL ADMIN — APP WEB INSTALABLE
+
+PUBLICAR
+1. Descomprime el ZIP.
+2. Sube TODO el contenido a la misma carpeta de tu hosting HTTPS.
+   index.html, pwa.js, sw.js, manifest.webmanifest, offline.html y los PNG
+   deben quedar juntos. No subas solamente el HTML ni cambies estos nombres.
+3. Abre la dirección publicada del panel.
+   Ejemplo: https://tu-dominio.com/panel/index.html
+
+INSTALAR EN ANDROID
+Abre el enlace publicado en Chrome y toca «Instalar app» en el panel.
+Si no aparece el diálogo, usa el menú ⋮ de Chrome → Instalar app o
+Agregar a la pantalla principal. El nombre puede variar según tu teléfono.
+La vista previa de Acode y un archivo local no permiten instalar la app.
+
+INSTALAR EN IPHONE
+Abre el enlace en Safari → Compartir → Agregar a la pantalla de inicio.
+Si aparece «Abrir como app web», actívalo. Toca Agregar.
+
+DATOS DEL USUARIO
+En la lista y en «Abrir / Ver usuario» aparece el correo de recuperación.
+«Copiar datos» copia usuario, contraseña guardada, correo, app e ID del vendedor.
+Si el teléfono bloquea el portapapeles, se abre un texto para copiar manualmente.
+
+El panel lee el correo guardado en el documento de cada usuario en Firestore.
+Reconoce recoveryEmail, recovery_email, emailRecovery, recoveryMail,
+recoverEmail, emailRecuperacion, correoRecuperacion, correo_recuperacion,
+email_recuperacion, recovery.email, recovery.correo y account.recoveryEmail.
+También admite email o correo como campos existentes de recuperación.
+El correo explícito de recuperación tiene prioridad sobre email y correo.
+
+No se incluyó el código de registro de tu app de clientes en este proyecto.
+Para nuevos registros, esa app debe guardar el correo en el mismo documento
+users/<ID del usuario>, preferentemente en el campo recoveryEmail.
+Si ya guarda uno de los campos admitidos, se mostrará automáticamente.
+Si no existe, el panel indica «Sin correo registrado».
+
+La contraseña se copia únicamente si ya está guardada como texto en el registro.
+Firebase Authentication no permite leer la contraseña de una cuenta.
+Si no está guardada, el panel indica que no está disponible; no cambia contraseñas.
+
+CONEXIÓN Y ACTUALIZACIONES
+La gestión de usuarios y vendedores requiere internet.
+Sin conexión se muestra una pantalla con el botón «Volver a intentar».
+El service worker guarda solamente archivos estáticos del panel.
+Las consultas a Firebase y los datos copiados de usuarios no se guardan en su caché.
+Las nuevas visitas conectadas cargan la última versión del HTML del servidor.
+
+Se conserva la configuración Firebase del panel que ya usabas.
+Si cambias de dominio, revisa los dominios autorizados en Firebase Authentication.
+El servidor debe servir sw.js con un tipo JavaScript y manifest.webmanifest
+como JSON o application/manifest+json; los hostings estáticos suelen hacerlo.
+
+REFERENCIAS DE INSTALACIÓN
+https://web.dev/learn/pwa/installation
+https://support.apple.com/en-lamr/guide/iphone/iphea86e5236/ios

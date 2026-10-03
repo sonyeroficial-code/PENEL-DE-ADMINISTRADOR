@@ -1,19 +1,15 @@
 {
   "id": "./",
   "name": "Panel Admin",
-  "short_name": "Panel Admin",
-  "description": "Panel de administración y vendedores.",
-  "start_url": "./",
+  "short_name": "Panel",
+  "description": "Panel de gestión de usuarios, vendedores y aplicaciones.",
+  "lang": "es-PE",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
-  "background_color": "#070d17",
+  "orientation": "portrait",
+  "background_color": "#0a0f17",
   "theme_color": "#0b0f16",
-  "orientation": "portrait-primary",
-  "lang": "es",
   "icons": [
     {
       "src": "./icon-192.png",
